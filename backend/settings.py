@@ -1,13 +1,15 @@
 from pathlib import Path
 from datetime import timedelta
 import os
+import dj_database_url
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-2u-3xoy&wx$l%2+(%%m&m__)uh_22^ara$&-j%^9k@63+3$)i^'
-DEBUG = True
+# Sécurité
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-2u-3xoy&wx$l%2+(%%m&m__)uh_22^ara$&-j%^9k@63+3$)i^')
+DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = ['*']
-
 
 # Applications
 INSTALLED_APPS = [
@@ -18,12 +20,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     # Third-party
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-
     # Local
     'users',
     'soutenances',
@@ -35,6 +35,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ← ajouté
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -46,16 +47,15 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
-# Configuration CORS détaillée
+# Configuration CORS
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",      # React
-    "http://localhost:5173",      # Vite
-    "http://localhost:8080",      # Vue/autre
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:8080",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8080",
 ]
-
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -86,15 +86,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+# Base de données
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'soutenances_db',
-        'USER': 'postgres',
-        'PASSWORD': 'admin1234',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=config(
+            'DATABASE_URL',
+            default='postgresql://postgres:admin1234@localhost:5432/soutenances_db'
+        )
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -109,18 +108,21 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+# Fichiers statiques
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Fichiers media
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 AUTH_USER_MODEL = 'users.User'
 
-# Backend d'authentification par email
 AUTHENTICATION_BACKENDS = [
     'users.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',  # fallback
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 REST_FRAMEWORK = {
