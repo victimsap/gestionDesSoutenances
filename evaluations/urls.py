@@ -7,10 +7,4 @@ from . import views
 router = DefaultRouter()
 router.register(r'evaluations', EvaluationViewSet, basename='evaluation')
 
-urlpatterns = [
-    # Vue classique
-    path('', index, name='index'),
-
-    # URLs DRF
-    path('api/', include(router.urls)),
-]
+urlpatterns = router.urls

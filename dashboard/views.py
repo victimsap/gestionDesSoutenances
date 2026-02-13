@@ -28,7 +28,7 @@ def stats(request):
 
         # statut des soutenances
         "soutenances_par_statut": list(
-            Soutenance.objects.values("status").annotate(total=Count("id"))
+            Soutenance.objects.values("salle").annotate(total=Count("id"))
         ),
     }
 

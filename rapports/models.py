@@ -35,4 +35,4 @@ class Rapport(models.Model):
         ordering = ['-uploaded_at']
 
     def __str__(self):
-        return f"Rapport {self.sujet.title} ({self.uploaded_by})"
+        return f"Rapport {self.sujet.titre} ({self.uploaded_by})"

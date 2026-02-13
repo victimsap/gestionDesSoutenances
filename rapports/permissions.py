@@ -2,37 +2,29 @@ from rest_framework import permissions
 
 class IsUploaderOrRelatedOrAdmin(permissions.BasePermission):
     """
-    Autorise l'accès si:
-    - utilisateur est l'uploader
-    - OU l'utilisateur est l'étudiant lié au sujet
-    - OU l'utilisateur est l'encadreur du sujet
-    - OU l'utilisateur est superuser (admin)
+    Permission pour les rapports :
+    - Admin : accès total
+    - Uploadeur : peut modifier/supprimer son rapport
+    - Étudiant/Encadreur lié au sujet : lecture seule
     """
-
+    
     def has_object_permission(self, request, view, obj):
-        user = request.user
-        if not user or not user.is_authenticated:
+        # Admin a tous les droits
+        if request.user.is_superuser:
+            return True
+        
+        # Lecture seule pour tous les authentifiés liés
+        if request.method in permissions.SAFE_METHODS:
+            # L'uploadeur peut lire
+            if obj.uploaded_by == request.user:
+                return True
+            # L'étudiant du sujet peut lire
+            if hasattr(obj.sujet, 'etudiant') and obj.sujet.etudiant == request.user:
+                return True
+            # L'encadreur du sujet peut lire
+            if hasattr(obj.sujet, 'encadreur') and obj.sujet.encadreur == request.user:
+                return True
             return False
-
-        if user.is_superuser:
-            return True
-
-        # uploader
-        if obj.uploaded_by == user:
-            return True
-
-        # étudiant lié au sujet
-        try:
-            if obj.sujet.student == user:
-                return True
-        except Exception:
-            pass
-
-        # encadreur du sujet
-        try:
-            if obj.sujet.encadreur == user:
-                return True
-        except Exception:
-            pass
-
-        return False
+        
+        # Modification/Suppression : seulement uploadeur ou admin
+        return obj.uploaded_by == request.user

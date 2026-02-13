@@ -5,14 +5,14 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Auth (users app)
-    path('api/auth/', include('users.urls')),  # Utilisation de users.urls à la place de authentication
+    path('api/auth/', include('users.urls')),
     path('dashboard/', include('dashboard.urls')),
-    path('soutenances/', include('soutenances.urls')),
-    path('rapports/', include('rapports.urls')),
-    path('evaluations/', include('evaluations.urls')),
+    path('api/soutenances/', include('soutenances.urls')),
+    path('api/rapports/', include('rapports.urls')),
+    path('api/evaluations/', include('evaluations.urls')),
     path('notifications/', include('notifications.urls')),
 ]
 
+# Servir les fichiers media en développement
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
